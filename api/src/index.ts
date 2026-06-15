@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { pool } from "./db.js";
 import { startWorker } from "./workers/provision-worker.js";
+import { getChannel, QUEUE_NAME } from "./mq.js";
 
 const PORT = 3000;
 
@@ -55,12 +56,20 @@ async function main() {
         status: "PENDING",
       };
 
+      const channel = await getChannel();
+
       await client.query(
         `insert into jobs (id, type, payload, status ) values ($1, $2, $3, $4)`,
         [job.id, job.type, job.payload, job.status],
       );
 
       await client.query("commit");
+
+      channel.sendToQueue(
+        QUEUE_NAME,
+        Buffer.from(JSON.stringify({ lbId: lb.id, jobId: job.id })),
+        { persistent: true },
+      );
 
       return res.status(200).json(lb);
     } catch (err) {

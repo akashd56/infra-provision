@@ -1,36 +1,25 @@
-import { pool } from "../db.js";
-import { claimNextJob } from "./claim-job.js";
+import { getChannel, QUEUE_NAME } from "../mq.js";
 import { provisionLb } from "./provision-lb.js";
 
-let running = false;
+async function startWorker() {
+  const channel = await getChannel();
 
-function startWorker() {
-  setInterval(async () => {
-    if (running) return;
-
-    running = true;
-
-    const client = await pool.connect();
+  channel.consume(QUEUE_NAME, async (msg) => {
+    if (!msg) return;
 
     try {
-      const job = await claimNextJob();
-
-      if (!job) return;
-
-      const lbId = job.payload.lbId;
-      const jobId = job.id;
+      const payload = JSON.parse(msg.content.toString());
+      const { lbId, jobId } = payload;
 
       await provisionLb(lbId, jobId);
 
-      return;
+      channel.ack(msg);
     } catch (err) {
-      await client.query("rollback");
-      throw err;
-    } finally {
-      running = false;
-      client.release();
+      console.error(`err: ${err}`);
     }
-  }, 4000);
+  });
+
+  return;
 }
 
 export { startWorker };

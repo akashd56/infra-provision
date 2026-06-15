@@ -15,6 +15,8 @@ async function provisionLb(lbId: string, jobId: string) {
 
     console.log(`Provisioning Load Balancer: ${lbId}`);
 
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     // demonstrate failure state
     if (Math.random() < 0.1) {
       await pool.query(
