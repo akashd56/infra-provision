@@ -10,8 +10,6 @@ export const JobStatus = {
   PROCESSING: "PROCESSING",
   DONE: "DONE",
   FAILED: "FAILED",
-  DELETING: "DELETING",
-  DELETED: "DELETED",
 } as const;
 
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus];

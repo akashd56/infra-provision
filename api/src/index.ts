@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
 import { pool } from "./db.js";
-import { startWorker } from "./workers/provision-worker.js";
+import { startWorker } from "./workers/worker.js";
 import { getChannel, QUEUE_NAME } from "./mq.js";
+import { JobStatus, JobType } from "./types/job.js";
+import { LbStatus } from "./types/lb.js";
 
 const PORT = 3000;
 
@@ -39,7 +41,7 @@ async function main() {
       const lb = {
         id: crypto.randomUUID(),
         name: lbName,
-        status: "PROVISIONING",
+        status: LbStatus.PROVISIONING,
       };
 
       await client.query(
@@ -49,14 +51,12 @@ async function main() {
 
       const job = {
         id: crypto.randomUUID(),
-        type: "PROVISION_LB",
+        type: JobType.PROVISION_LB,
         payload: {
           lbId: lb.id,
         },
-        status: "PENDING",
+        status: JobStatus.PENDING,
       };
-
-      const channel = await getChannel();
 
       await client.query(
         `insert into jobs (id, type, payload, status ) values ($1, $2, $3, $4)`,
@@ -65,9 +65,17 @@ async function main() {
 
       await client.query("commit");
 
+      const channel = await getChannel();
+
       channel.sendToQueue(
         QUEUE_NAME,
-        Buffer.from(JSON.stringify({ lbId: lb.id, jobId: job.id })),
+        Buffer.from(
+          JSON.stringify({
+            lbId: lb.id,
+            jobId: job.id,
+            jobType: JobType.PROVISION_LB,
+          }),
+        ),
         { persistent: true },
       );
 

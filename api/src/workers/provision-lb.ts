@@ -1,4 +1,6 @@
 import { pool } from "../db.js";
+import { JobStatus } from "../types/job.js";
+import { LbStatus } from "../types/lb.js";
 
 async function provisionLb(lbId: string, jobId: string) {
   try {
@@ -8,7 +10,10 @@ async function provisionLb(lbId: string, jobId: string) {
     );
 
     if (lbResult.rows.length === 0) {
-      await pool.query(`update jobs set status='FAILED' where id=$1`, [jobId]);
+      await pool.query(`update jobs set status=$1 where id=$2`, [
+        JobStatus.FAILED,
+        jobId,
+      ]);
 
       return;
     }
@@ -19,22 +24,28 @@ async function provisionLb(lbId: string, jobId: string) {
 
     // demonstrate failure state
     if (Math.random() < 0.1) {
-      await pool.query(
-        `update load_balancers set status='FAILED' where id=$1`,
-        [lbId],
-      );
+      await pool.query(`update load_balancers set status=$1 where id=$2`, [
+        LbStatus.FAILED,
+        lbId,
+      ]);
 
-      await pool.query(`update jobs set status='FAILED' where id=$1`, [jobId]);
+      await pool.query(`update jobs set status=$1 where id=$2`, [
+        JobStatus.FAILED,
+        jobId,
+      ]);
 
       return;
     }
 
-    await pool.query(
-      `update load_balancers set status='PROVISIONED' where id=$1`,
-      [lbId],
-    );
+    await pool.query(`update load_balancers set status=$1 where id=$2`, [
+      LbStatus.PROVISIONED,
+      lbId,
+    ]);
 
-    await pool.query(`update jobs set status='DONE' where id=$1`, [jobId]);
+    await pool.query(`update jobs set status=$1 where id=$2`, [
+      JobStatus.DONE,
+      jobId,
+    ]);
   } catch (err) {
     throw err;
   }
