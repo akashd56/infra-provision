@@ -2,7 +2,8 @@ import { Router } from "express";
 import { pool } from "../../db.js";
 import { LbStatus } from "../../types/lb.js";
 import { JobStatus, JobType } from "../../types/job.js";
-import { getChannel, QUEUE_NAME } from "../../mq.js";
+import { getChannel, QUEUE_NAME } from "../../lib/rabbitmq.js";
+import type { QueueMessage } from "../../types/queue.js";
 
 const lbRouter: Router = Router();
 
@@ -32,11 +33,15 @@ lbRouter.delete("/loadbalancers/:id", async (req, res) => {
 
     const channel = await getChannel();
 
-    channel.sendToQueue(
-      QUEUE_NAME,
-      Buffer.from(JSON.stringify({ lbId, jobId, jobType: JobType.DELETE_LB })),
-      { persistent: true },
-    );
+    const message: QueueMessage = {
+      lbId,
+      jobId,
+      jobType: JobType.DELETE_LB,
+    };
+
+    channel.sendToQueue(QUEUE_NAME, Buffer.from(JSON.stringify(message)), {
+      persistent: true,
+    });
 
     return res.json({
       lbId,

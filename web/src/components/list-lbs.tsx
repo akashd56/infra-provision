@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import type { LoadBalancer } from "../types/lb";
 
 function ListLbs() {
-  const [lbs, setLbs] = useState([]);
+  const [lbs, setLbs] = useState<LoadBalancer[]>([]);
 
   useEffect(() => {
     async function fetchLbs() {
@@ -13,7 +14,7 @@ function ListLbs() {
       setLbs(data);
     }
 
-    fetchLbs();
+    fetchLbs(); // why dont we await this
 
     const interval = setInterval(() => {
       fetchLbs();
@@ -24,14 +25,21 @@ function ListLbs() {
     };
   }, []);
 
+  async function deleteLb(lbId: string) {
+    await fetch(`http://localhost:3000/loadbalancers/${lbId}`, {
+      method: "delete",
+    });
+  }
+
   return (
     <div>
       <h2>LB List</h2>
 
       <ul>
-        {lbs.map((lb: any) => (
+        {lbs.map((lb: LoadBalancer) => (
           <li key={lb.id}>
             {lb.name} - {lb.status}
+            <button onClick={() => deleteLb(lb.id)}>Delete</button>
           </li>
         ))}
       </ul>
