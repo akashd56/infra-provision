@@ -1,7 +1,7 @@
 import type { JobType } from "./job.js";
 
 type QueueMessage = {
-  lbId: string;
+  resourceId: string;
   jobId: string;
   jobType: JobType;
 };

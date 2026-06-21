@@ -1,16 +1,16 @@
 import { Router } from "express";
 import { pool } from "../../db.js";
-import { LbStatus } from "../../types/lb.js";
+import { ResourceStatus } from "../../types/resource.js";
 import { JobStatus, JobType } from "../../types/job.js";
 import { getChannel, QUEUE_NAME } from "../../lib/rabbitmq.js";
 import type { QueueMessage } from "../../types/queue.js";
 
-const lbRouter: Router = Router();
+const resourceRouter: Router = Router();
 
-lbRouter.delete("/loadbalancers/:id", async (req, res) => {
-  const lbId = req.params.id;
+resourceRouter.delete("/loadbalancers/:id", async (req, res) => {
+  const resourceId = req.params.id;
 
-  if (!lbId) throw new Error("Missing loadbalancer ID");
+  if (!resourceId) throw new Error("Missing loadbalancer ID");
 
   const client = await pool.connect();
 
@@ -18,15 +18,15 @@ lbRouter.delete("/loadbalancers/:id", async (req, res) => {
     await client.query("begin");
 
     await client.query("update load_balancers set status=$1 where id=$2", [
-      LbStatus.DELETING,
-      lbId,
+      ResourceStatus.DELETING,
+      resourceId,
     ]);
 
     const jobId = crypto.randomUUID();
 
     await client.query(
       "insert into jobs ( id, type, payload, status) values ($1, $2, $3, $4)",
-      [jobId, JobType.DELETE_LB, { lbId }, JobStatus.PENDING],
+      [jobId, JobType.DELETE_LB, { resourceId }, JobStatus.PENDING],
     );
 
     await client.query("commit");
@@ -34,7 +34,7 @@ lbRouter.delete("/loadbalancers/:id", async (req, res) => {
     const channel = await getChannel();
 
     const message: QueueMessage = {
-      lbId,
+      resourceId,
       jobId,
       jobType: JobType.DELETE_LB,
     };
@@ -44,7 +44,7 @@ lbRouter.delete("/loadbalancers/:id", async (req, res) => {
     });
 
     return res.json({
-      lbId,
+      resourceId,
       jobId,
       status: "DELETING",
     });
@@ -56,4 +56,4 @@ lbRouter.delete("/loadbalancers/:id", async (req, res) => {
   }
 });
 
-export { lbRouter };
+export { resourceRouter };
