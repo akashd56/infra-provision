@@ -1,19 +1,17 @@
 import { Router } from "express";
 import { pool } from "../../db.js";
 
-import { LbStatus } from "../../types/lb.js";
+import { ResourceStatus } from "../../types/resource.js";
 import { JobStatus, JobType } from "../../types/job.js";
-import { SupportedImages } from "../../types/images.js";
+import { SupportedImages } from "../../types/image.js";
 
 import { getChannel, QUEUE_NAME } from "../../lib/rabbitmq.js";
 import type { QueueMessage } from "../../types/queue.js";
 
-const createLbRouter: Router = Router();
+const createResourceRouter: Router = Router();
 
-createLbRouter.post("/loadbalancers", async (req, res) => {
-  const { resourceName, resource } = req.body;
-
-  console.log(resource);
+createResourceRouter.post("/loadbalancers", async (req, res) => {
+  const { resourceName, resource: image } = req.body;
 
   if (!resourceName) throw new Error("Please specify resource name");
 
@@ -23,26 +21,26 @@ createLbRouter.post("/loadbalancers", async (req, res) => {
     await client.query("begin");
 
     // validate the resource
-    if (!Object.values(SupportedImages).includes(resource))
+    if (!Object.values(SupportedImages).includes(image))
       throw new Error("Unsupported Image");
 
-    const lb = {
+    const resource = {
       id: crypto.randomUUID(),
       name: resourceName,
-      status: LbStatus.PROVISIONING,
-      image: resource,
+      status: ResourceStatus.PROVISIONING,
+      image,
     };
 
     await client.query(
       `insert into load_balancers (id, name, image, status) values ($1, $2, $3, $4)`,
-      [lb.id, lb.name, lb.image, lb.status],
+      [resource.id, resource.name, resource.image, resource.status],
     );
 
     const job = {
       id: crypto.randomUUID(),
       type: JobType.PROVISION_LB,
       payload: {
-        lbId: lb.id,
+        resourceId: resource.id,
       },
       status: JobStatus.PENDING,
     };
@@ -57,7 +55,7 @@ createLbRouter.post("/loadbalancers", async (req, res) => {
     const channel = await getChannel();
 
     const message: QueueMessage = {
-      lbId: lb.id,
+      resourceId: resource.id,
       jobId: job.id,
       jobType: JobType.PROVISION_LB,
     };
@@ -66,7 +64,7 @@ createLbRouter.post("/loadbalancers", async (req, res) => {
       persistent: true,
     });
 
-    return res.status(200).json(lb);
+    return res.status(200).json(resource);
   } catch (err) {
     await client.query("rollback");
     throw err;
@@ -75,4 +73,4 @@ createLbRouter.post("/loadbalancers", async (req, res) => {
   }
 });
 
-export { createLbRouter };
+export { createResourceRouter };

@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import { pool } from "./db.js";
 import { startWorker } from "./workers/worker.js";
-import { lbRouter } from "./routes/loadbalancers/delete.js";
-import { dockerRouter } from "./routes/docker/test.js";
-import { createLbRouter } from "./routes/loadbalancers/create.js";
+import { resourceRouter } from "./routes/resources/delete.js";
+import { createResourceRouter } from "./routes/resources/create.js";
+import { healthCheckRouter } from "./routes/health/health.js";
 
 const PORT = 3000;
 
@@ -13,9 +13,9 @@ async function main() {
 
   app.use(cors());
   app.use(express.json());
-  app.use(lbRouter);
-  app.use(createLbRouter);
-  app.use(dockerRouter);
+  app.use(resourceRouter);
+  app.use(createResourceRouter);
+  app.use(healthCheckRouter);
 
   app.get("/loadbalancers", async (_req, res) => {
     const result = await pool.query(

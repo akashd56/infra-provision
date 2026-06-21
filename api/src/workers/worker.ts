@@ -1,8 +1,8 @@
 import { getChannel, QUEUE_NAME } from "../lib/rabbitmq.js";
 import { pool } from "../db.js";
 
-import { deleteLb } from "./delete-lb.js";
-import { provisionLb } from "./provision-lb.js";
+import { deleteResource } from "./delete-resource.js";
+import { provisionResource } from "./provision-resource.js";
 
 import { JobStatus, JobType } from "../types/job.js";
 import type { QueueMessage } from "../types/queue.js";
@@ -29,10 +29,10 @@ async function startWorker() {
 
       switch (jobType) {
         case JobType.PROVISION_LB:
-          await provisionLb(payload);
+          await provisionResource(payload);
           break;
         case JobType.DELETE_LB:
-          await deleteLb(payload);
+          await deleteResource(payload);
           break;
         default:
           throw new Error(`Unknown job type: ${jobType}`);

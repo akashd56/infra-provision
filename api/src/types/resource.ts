@@ -1,4 +1,4 @@
-export const LbStatus = {
+export const ResourceStatus = {
   PROVISIONING: "PROVISIONING",
   PROVISIONED: "PROVISIONED",
   FAILED: "FAILED",
@@ -6,4 +6,5 @@ export const LbStatus = {
   DELETED: "DELETED",
 } as const;
 
-export type LbStatus = (typeof LbStatus)[keyof typeof LbStatus];
+export type ResourceStatus =
+  (typeof ResourceStatus)[keyof typeof ResourceStatus];

@@ -1,19 +1,19 @@
 import { pool } from "../db.js";
 import { JobStatus } from "../types/job.js";
-import { LbStatus } from "../types/lb.js";
+import { ResourceStatus } from "../types/resource.js";
 import type { QueueMessage } from "../types/queue.js";
 
-import { docker } from "../lib/docker.js";
+import { docker } from "../lib/docker/docker.js";
 
-async function deleteLb(payload: QueueMessage) {
-  const { lbId, jobId } = payload;
+async function deleteResource(payload: QueueMessage) {
+  const { resourceId, jobId } = payload;
   try {
-    const lbResult = await pool.query(
+    const resourceResult = await pool.query(
       `select * from load_balancers where id=$1`,
-      [lbId],
+      [resourceId],
     );
 
-    if (lbResult.rows.length === 0) {
+    if (resourceResult.rows.length === 0) {
       await pool.query(`update jobs set status=$1 where id=$2`, [
         JobStatus.FAILED,
         jobId,
@@ -22,11 +22,11 @@ async function deleteLb(payload: QueueMessage) {
       return;
     }
 
-    const lb = lbResult.rows[0];
+    const resource = resourceResult.rows[0];
 
-    const containerId = lb.container_id;
+    const containerId = resource.container_id;
 
-    if (lb.status === LbStatus.DELETED) {
+    if (resource.status === ResourceStatus.DELETED) {
       await pool.query(`update jobs set status=$1 where id=$2`, [
         JobStatus.DONE,
         jobId,
@@ -41,8 +41,8 @@ async function deleteLb(payload: QueueMessage) {
       await container.inspect();
     } catch {
       await pool.query("update load_balancers set status=$1 where id=$2", [
-        LbStatus.DELETED,
-        lbId,
+        ResourceStatus.DELETED,
+        resourceId,
       ]);
 
       await pool.query(
@@ -59,8 +59,8 @@ async function deleteLb(payload: QueueMessage) {
     await container.remove();
 
     await pool.query(`update load_balancers set status=$1 where id=$2`, [
-      LbStatus.DELETED,
-      lbId,
+      ResourceStatus.DELETED,
+      resourceId,
     ]);
 
     await pool.query(`update jobs set status=$1 where id=$2`, [
@@ -76,4 +76,4 @@ async function deleteLb(payload: QueueMessage) {
   }
 }
 
-export { deleteLb };
+export { deleteResource };
