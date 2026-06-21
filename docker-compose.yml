@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: infra_provision
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data"
+  queue:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - "rabbitmq_data:/var/lib/rabbitmq"
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
