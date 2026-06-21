@@ -1,18 +1,13 @@
 import { docker } from "./docker.js";
 
-async function pullImage(image: string) {
-  const stream = await docker.pull(image);
+function pullImage(image: string) {
+  //followProgress(stream, onFinished, [onProgress])
+  docker.pull(image, function (err, stream) {
+    //...
+    docker.modem.followProgress(stream, () => {
 
-  await new Promise<void>((resolve, reject) => {
-    docker.modem.followProgress(stream, (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      resolve();
     });
+
+
   });
 }
-
-export { pullImage };
