@@ -5,13 +5,15 @@ import { RouterProvider } from "react-router/dom";
 
 import App from "./App";
 import NotFound from "./components/not-found";
-import ListLbs from "./components/list-lbs";
+import ListResources from "./components/list-resources";
 import { ListJobs } from "./components/list-jobs";
+import { Health } from "./components/health";
 
 const router = createBrowserRouter([
   { path: "/", element: <App /> },
-  { path: "/loadbalancers", element: <ListLbs /> },
+  { path: "/resources", element: <ListResources /> },
   { path: "/jobs", element: <ListJobs /> },
+  { path: "/health", element: <Health /> },
   {
     path: "*",
     element: <NotFound />,
