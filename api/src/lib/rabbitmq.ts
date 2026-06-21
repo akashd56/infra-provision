@@ -1,6 +1,6 @@
 import amqp, { type Channel } from "amqplib";
 
-const QUEUE_NAME = "provision_lb";
+const QUEUE_NAME = "provision_resource";
 
 let channel: Channel | null = null;
 
