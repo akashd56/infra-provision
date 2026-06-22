@@ -5,4 +5,5 @@ export type Resource = {
   name: string;
   status: string;
   image: ResourceImage;
+  container_id: string;
 };

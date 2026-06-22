@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import "./index.css";
+import { env } from "./env";
 
 function App() {
   const [resourceName, setResourceName] = useState("");
@@ -8,7 +9,7 @@ function App() {
   const [response, setResponse] = useState(null);
 
   async function createResource() {
-    const res = await fetch("http://localhost:3000/loadbalancers", {
+    const res = await fetch(`${env.API_URL}/loadbalancers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

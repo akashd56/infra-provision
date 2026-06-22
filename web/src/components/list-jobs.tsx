@@ -1,18 +1,30 @@
 import { useEffect, useState } from "react";
 import type { Job } from "../types/job";
 import { Link } from "react-router";
+import { LoadingMessage } from "./loading-message";
+import { ErrorMessage } from "./error-message";
+import { env } from "../env";
 
 function ListJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchJobs() {
-      const res = await fetch("http://localhost:3000/jobs", {
-        method: "GET",
-      });
+      try {
+        const res = await fetch(`${env.API_URL}/jobs`, {
+          method: "GET",
+        });
 
-      const data = await res.json();
-      setJobs(data);
+        const data = await res.json();
+        setJobs(data);
+        setError(null);
+      } catch {
+        setError("Failed to load jobs");
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchJobs();
@@ -22,6 +34,14 @@ function ListJobs() {
       clearInterval(interval);
     };
   }, []);
+
+  if (loading) {
+    return <LoadingMessage message="Loading resources..." />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-6">

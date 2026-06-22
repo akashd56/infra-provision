@@ -17,7 +17,7 @@ async function main() {
   app.use(createResourceRouter);
   app.use(healthCheckRouter);
 
-  app.get("/loadbalancers", async (_req, res) => {
+  app.get("/resources", async (_req, res) => {
     const result = await pool.query(
       `select * from load_balancers order by created_at desc`,
     );
