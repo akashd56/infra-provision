@@ -325,8 +325,6 @@ Example response:
 
 ![Health](./docs/screenshots/health.png)
 
-*Add screenshot*
-
 ---
 
 ## W.I.P
