@@ -4,10 +4,10 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 
 import App from "./App";
-import NotFound from "./components/not-found";
-import ListResources from "./components/list-resources";
-import { ListJobs } from "./components/list-jobs";
-import { Health } from "./components/health";
+import NotFound from "./components/pages/not-found";
+import ListResources from "./components/pages/list-resources";
+import { ListJobs } from "./components/pages/list-jobs";
+import { Health } from "./components/pages/health";
 
 const router = createBrowserRouter([
   { path: "/", element: <App /> },

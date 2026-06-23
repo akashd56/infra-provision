@@ -1,76 +1,98 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import "./index.css";
 import { env } from "./env";
+import { Navbar } from "./components/layout/navbar";
+
+import "./index.css";
 
 function App() {
   const [resourceName, setResourceName] = useState("");
-  const [resource, setResource] = useState("nginx:latest"); // this string is the default value of the dropdown
+  const [resource, setResource] = useState("nginx:latest");
   const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   async function createResource() {
-    const res = await fetch(`${env.API_URL}/loadbalancers`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ resourceName, resource }),
-    });
+    setLoading(true);
 
-    const data = await res.json();
-    setResponse(data);
+    try {
+      const res = await fetch(`${env.API_URL}/resources`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ resourceName, resource }),
+      });
 
-    console.log(resource);
+      const data = await res.json();
+      setResponse(data);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Provision Resource</h1>
+    <>
+      <Navbar />
 
-      <div className="flex gap-4 mb-6">
-        <Link className="text-blue-600 underline" to="/resources">
-          Resources
-        </Link>
+      <div className="min-h-screen bg-gray-50 flex items-start justify-center p-6">
+        <div className="w-full max-w-xl bg-white border rounded-xl shadow-sm p-6">
+          <h1 className="text-2xl font-semibold mb-1">Provision Resource</h1>
 
-        <Link className="text-blue-600 underline" to="/jobs">
-          Jobs
-        </Link>
+          <p className="text-sm text-gray-500 mb-6">
+            Create and deploy a Docker-based infrastructure resource
+          </p>
 
-        <Link className="text-blue-600 underline" to="/health">
-          Health
-        </Link>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Resource Name
+              </label>
+              <input
+                className="mt-1 w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                value={resourceName}
+                onChange={(e) => setResourceName(e.target.value)}
+                placeholder="e.g. redis-cache"
+              />
+            </div>
+
+            {/* IMAGE SELECT */}
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Container Image
+              </label>
+              <select
+                value={resource}
+                onChange={(e) => setResource(e.target.value)}
+                className="mt-1 w-full border rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="nginx:latest">nginx:latest</option>
+                <option value="redis:latest">redis:latest</option>
+                <option value="postgres:17">postgres:17</option>
+              </select>
+            </div>
+
+            <button
+              onClick={createResource}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              {loading ? "Creating..." : "Create Resource"}
+            </button>
+          </div>
+
+          {response && (
+            <div className="mt-6">
+              <div className="text-sm font-medium text-green-600 mb-2">
+                Resource Created
+              </div>
+
+              <pre className="bg-gray-900 text-green-300 text-xs p-3 rounded-lg overflow-auto">
+                {JSON.stringify(response, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
       </div>
-
-      <div className="flex flex-col gap-3">
-        <input
-          className="border p-2 rounded"
-          value={resourceName} // let's you change the default display value
-          onChange={(e) => setResourceName(e.target.value)}
-          placeholder="Resource name"
-        />
-        <select
-          value={resource}
-          onChange={(e) => setResource(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="nginx:latest">nginx:latest</option>
-          <option value="redis:latest">redis:latest</option>
-          <option value="postgres:17">postgres:17</option>
-        </select>
-        <button
-          onClick={createResource}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          create
-        </button>
-      </div>
-
-      {response && (
-        <pre className="mt-4 border p-3 rounded bg-green-300">
-          {JSON.stringify(response, null, 2)}
-        </pre>
-      )}
-    </div>
+    </>
   );
 }
 

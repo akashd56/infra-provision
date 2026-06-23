@@ -7,10 +7,10 @@ import type { QueueMessage } from "../../types/queue.js";
 
 const resourceRouter: Router = Router();
 
-resourceRouter.delete("/loadbalancers/:id", async (req, res) => {
+resourceRouter.delete("/resources/:id", async (req, res) => {
   const resourceId = req.params.id;
 
-  if (!resourceId) throw new Error("Missing loadbalancer ID");
+  if (!resourceId) throw new Error("Missing resource ID");
 
   const client = await pool.connect();
 

@@ -14,10 +14,10 @@ async function deleteResource(payload: QueueMessage) {
     );
 
     if (resourceResult.rows.length === 0) {
-      await pool.query(`update jobs set status=$1 where id=$2`, [
-        JobStatus.FAILED,
-        jobId,
-      ]);
+      await pool.query(
+        `update jobs set status=$1, updated_at=now() where id=$2`,
+        [JobStatus.FAILED, jobId],
+      );
 
       return;
     }
@@ -27,10 +27,10 @@ async function deleteResource(payload: QueueMessage) {
     const containerId = resource.container_id;
 
     if (resource.status === ResourceStatus.DELETED) {
-      await pool.query(`update jobs set status=$1 where id=$2`, [
-        JobStatus.DONE,
-        jobId,
-      ]);
+      await pool.query(
+        `update jobs set status=$1, updated_at=now() where id=$2`,
+        [JobStatus.DONE, jobId],
+      );
 
       return;
     }
@@ -46,9 +46,7 @@ async function deleteResource(payload: QueueMessage) {
       ]);
 
       await pool.query(
-        `update jobs
-           set status=$1
-           where id=$2`,
+        `update jobs set status=$1, updated_at=now()  where id=$2`,
         [JobStatus.DONE, jobId],
       );
 
@@ -63,15 +61,15 @@ async function deleteResource(payload: QueueMessage) {
       resourceId,
     ]);
 
-    await pool.query(`update jobs set status=$1 where id=$2`, [
-      JobStatus.DONE,
-      jobId,
-    ]);
+    await pool.query(
+      `update jobs set status=$1, updated_at=now() where id=$2`,
+      [JobStatus.DONE, jobId],
+    );
   } catch (err) {
-    await pool.query(`update jobs set status=$1 where id=$2`, [
-      JobStatus.FAILED,
-      jobId,
-    ]);
+    await pool.query(
+      `update jobs set status=$1, updated_at=now() where id=$2`,
+      [JobStatus.FAILED, jobId],
+    );
     throw err;
   }
 }
