@@ -5,6 +5,7 @@ import { deleteResource } from "./delete-resource.js";
 import { provisionResource } from "./provision-resource.js";
 
 import { JobStatus, JobType } from "../types/job.js";
+import { ResourceStatus } from "../types/resource.js";
 import type { QueueMessage } from "../types/queue.js";
 
 async function startWorker() {
@@ -15,17 +16,19 @@ async function startWorker() {
 
     let jobId!: string;
     let jobType!: JobType;
+    let resourceId!: string;
 
     try {
       const payload: QueueMessage = JSON.parse(msg.content.toString());
 
       jobId = payload.jobId;
       jobType = payload.jobType;
+      resourceId = payload.resourceId;
 
-      await pool.query(`update jobs set status=$1 where id=$2`, [
-        JobStatus.PROCESSING,
-        jobId,
-      ]);
+      await pool.query(
+        `update jobs set status=$1, updated_at=now() where id=$2`,
+        [JobStatus.PROCESSING, jobId],
+      );
 
       switch (jobType) {
         case JobType.PROVISION_LB:
@@ -49,28 +52,30 @@ async function startWorker() {
       }
 
       const result = await pool.query(
-        `update jobs
-         set attempts = attempts + 1
-         where id=$1 returning attempts`,
+        `update jobs set attempts = attempts + 1, updated_at=now() where id=$1 returning attempts`,
         [jobId],
       );
 
       const attempts = result.rows[0].attempts;
 
       if (attempts >= 3) {
-        await pool.query(`update jobs set status=$1 where id=$2`, [
-          JobStatus.FAILED,
-          jobId,
-        ]);
+        await pool.query(
+          `update load_balancers set status=$1, updated_at=now() where id=$2`,
+          [ResourceStatus.FAILED, resourceId],
+        );
 
+        await pool.query(
+          `update jobs set status=$1, updated_at=now() where id=$2`,
+          [JobStatus.FAILED, jobId],
+        );
         channel.ack(msg);
         return;
       }
 
-      await pool.query("update jobs set status=$1 where id=$2", [
-        JobStatus.PENDING,
-        jobId,
-      ]);
+      await pool.query(
+        "update jobs set status=$1, updated_at=now() where id=$2",
+        [JobStatus.PENDING, jobId],
+      );
 
       channel.sendToQueue(QUEUE_NAME, msg.content, { persistent: true });
 

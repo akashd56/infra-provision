@@ -10,7 +10,7 @@ import type { QueueMessage } from "../../types/queue.js";
 
 const createResourceRouter: Router = Router();
 
-createResourceRouter.post("/loadbalancers", async (req, res) => {
+createResourceRouter.post("/resources", async (req, res) => {
   const { resourceName, resource: image } = req.body;
 
   if (!resourceName) throw new Error("Please specify resource name");
