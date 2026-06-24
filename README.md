@@ -42,7 +42,13 @@ This project explores backend engineering concepts including asynchronous proces
 docker compose up -d
 ```
 
-### 2. Start API
+### 2. Create Database Schema
+
+```bash
+psql -U postgres -d infra_provision -f api/src/migrations/001_create_table.sql
+```
+
+### 3. Start API
 
 ```bash
 cd api
@@ -50,14 +56,14 @@ pnpm install
 pnpm dev
 ```
 
-### 3. Start Worker
+### 4. Start Worker
 
 ```bash
 cd api
 pnpm worker
 ```
 
-### 4. Start Frontend
+### 5. Start Frontend
 
 ```bash
 cd web
