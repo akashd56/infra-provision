@@ -1,10 +1,36 @@
 # Infra Provision
 
-An infrastructure provisioning platform that automates Docker container lifecycle management through asynchronous job processing.
+Infra Provision is an asynchronous infrastructure automation platform that provisions and manages Docker containers through REST APIs, message queues, and background worker services.
 
-The system accepts infrastructure provisioning requests through a web interface, persists resource and job data in PostgreSQL, dispatches jobs through RabbitMQ, and performs container lifecycle operations asynchronously using dedicated worker processes.
+The platform persists resource and job state in PostgreSQL, dispatches infrastructure operations through RabbitMQ, and executes container lifecycle workflows using dedicated worker processes. By decoupling API requests from infrastructure execution, the system provides reliable job orchestration, retry-aware processing, and fault-tolerant resource management.
 
-Infra Provision demonstrates how modern backend systems coordinate APIs, databases, message queues, and background workers to perform infrastructure automation reliably and asynchronously.
+This project explores backend engineering concepts including asynchronous processing, distributed job execution, idempotent workflows, state management, infrastructure automation, and container orchestration.
+
+---
+
+<details>
+<summary><strong>Table of Contents</strong></summary>
+
+- [Running Locally](#running-locally)
+- [Core Capabilities](#core-capabilities)
+- [Architecture](#architecture)
+  - [Components](#components)
+- [REST API](#rest-api)
+  - [Resource Endpoints](#resource-endpoints)
+  - [Job Endpoints](#job-endpoints)
+  - [Health Endpoint](#health-endpoint)
+- [Provisioning Workflow](#provisioning-workflow)
+  - [Provision Resource](#provision-resource)
+- [Deletion Workflow](#deletion-workflow)
+  - [Delete Resource](#delete-resource)
+- [Technology Stack](#technology-stack)
+- [Resource Lifecycle](#resource-lifecycle)
+- [Job States](#job-states)
+- [Health Monitoring](#health-monitoring)
+- [Screenshots](#screenshots)
+- [WIP](#wip)
+
+</details>
 
 ---
 
