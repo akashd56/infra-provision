@@ -8,6 +8,10 @@ This project explores backend engineering concepts including asynchronous proces
 
 ---
 
+https://github.com/user-attachments/assets/a8a3cb4f-bdba-46e4-8904-8ed9ae11cb91
+
+---
+
 <details>
 <summary><strong>Table of Contents</strong></summary>
 
