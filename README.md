@@ -365,9 +365,6 @@ Example response:
 
 ## W.I.P
 
-- [ ] WebSocket-based real-time updates
 - [ ] Benchmarks
-- [ ] Retries for failed jobs
-- [ ] OpenAPI integration
 - [ ] CI/CD
 - [ ] Tests
