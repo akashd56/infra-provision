@@ -2,7 +2,7 @@
 
 Infra Provision is an asynchronous infrastructure automation platform that provisions and manages Docker containers through REST APIs, message queues, and background worker services.
 
-The platform persists resource and job state in PostgreSQL, dispatches infrastructure operations through RabbitMQ, and executes container lifecycle workflows using dedicated worker processes. By decoupling API requests from infrastructure execution, the system provides reliable job orchestration, retry-aware processing, and fault-tolerant resource management.
+The platform stores resource and job state in PostgreSQL. It sends operations through RabbitMQ. Worker processes run the container lifecycle workflows. The platform decouples API requests from infrastructure execution. This gives reliable job processing with retries and fault-tolerant resource management.
 
 This project explores backend engineering concepts including asynchronous processing, distributed job execution, idempotent workflows, state management, infrastructure automation, and container orchestration.
 
@@ -133,7 +133,7 @@ Docker
 
 ## REST API
 
-The Express API acts as the orchestration layer between the frontend, PostgreSQL, and RabbitMQ.
+The Express API connects the frontend, PostgreSQL, and RabbitMQ.
 
 ### Resource Endpoints
 
@@ -202,12 +202,12 @@ end
 
 1. User submits a provisioning request.
 2. API validates the request.
-3. Resource metadata is persisted.
-4. A provisioning job is created.
-5. The job is published to RabbitMQ.
+3. API persists the resource metadata.
+4. API creates a provisioning job.
+5. API publishes the job to RabbitMQ.
 6. A worker consumes the message.
 7. Docker provisions the container.
-8. Resource and job status are updated.
+8. Worker updates the resource and job status.
 
 ---
 
@@ -266,10 +266,10 @@ end
 
 1. User requests resource deletion.
 2. API creates a deletion job.
-3. Job is published to RabbitMQ.
+3. API publishes the job to RabbitMQ.
 4. Worker consumes the message.
 5. Docker removes the container.
-6. Resource and job status are updated.
+6. Worker updates the resource and job status.
 
 ---
 
