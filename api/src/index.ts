@@ -1,10 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { pool } from "./db.js";
 import { startWorker } from "./workers/worker.js";
-import { resourceRouter } from "./routes/resources/delete.js";
-import { createResourceRouter } from "./routes/resources/create.js";
-import { healthCheckRouter } from "./routes/health/health.js";
+import { apiRouter } from "./routes/index.js";
 
 const PORT = 3000;
 
@@ -13,26 +10,11 @@ async function main() {
 
   app.use(cors());
   app.use(express.json());
-  app.use(resourceRouter);
-  app.use(createResourceRouter);
-  app.use(healthCheckRouter);
 
-  app.get("/resources", async (_req, res) => {
-    const result = await pool.query(
-      `select * from load_balancers order by created_at desc`,
-    );
-
-    return res.json(result.rows);
-  });
-
-  app.get("/jobs", async (_req, res) => {
-    const jobResult = await pool.query(`select * from jobs`);
-
-    res.json(jobResult.rows);
-  });
+  // Mount API routes
+  app.use("/api", apiRouter);
 
   // simulates a running queue, that processes tasks one at a time
-
   startWorker();
 
   app.listen(PORT, () => {
@@ -41,3 +23,4 @@ async function main() {
 }
 
 main().catch(console.error);
+
